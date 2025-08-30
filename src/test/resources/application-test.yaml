@@ -1,10 +1,16 @@
 spring.cache.type: none
 spring:
-  config:
-    import: optional:file:./application-secrets.yaml
-  init:
-    mode: always
   datasource:
-    url: jdbc:postgresql://localhost:5433/jira-test
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:jiradb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none          # схему берём из data.sql (в этом файле есть DDL)
+  sql:
+    init:
+      mode: always            # прогоняет data.sql
+  liquibase:
+    enabled: false
