@@ -122,9 +122,11 @@ spring:
 logging:
   level:
     root: WARN
-    com.javarush.jira: DEBUG
-    com.javarush.jira.common.config.MvcConfig: WARN
-    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: DEBUG
+    com.javarush.jira: WARN
+#    com.javarush.jira.common.config.MvcConfig: DEBUG
+#    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: DEBUG
+    org.springframework.web: WARN
+    org.springframework.http: WARN
 
 server:
   #  https://springdoc.org/index.html#how-can-i-deploy-springdoc-openapi-ui-behind-a-reverse-proxy
