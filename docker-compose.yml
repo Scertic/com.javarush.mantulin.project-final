@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: jira
+      POSTGRES_USER: jira
+      POSTGRES_PASSWORD: JiraRush
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks: [appnet]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jira -d jira"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    image: jr_app:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/jira
+      SPRING_DATASOURCE_USERNAME: jira
+      SPRING_DATASOURCE_PASSWORD: JiraRush
+      # application.yaml импортирует соседний файл — подскажем явно путь
+      SPRING_CONFIG_IMPORT: optional:file:/app/application-secrets.yaml
+      # при желании можно переопределить путь вложений:
+      # APP_ATTACHMENTS_DIR: /app/attachments
+    volumes:
+      - ./application-secrets.yaml:/app/application-secrets.yaml:ro
+      - attachments:/app/attachments
+    networks: [appnet]
+
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      # кладем серверный блок в conf.d (не перетираем базовый nginx.conf)
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # статика/фронт/страницы — из КОРНЯ ./resources
+      - ./resources:/opt/jirarush/resources:ro
+      # если хочешь раздавать вложения напрямую nginx'ом:
+      # - attachments:/opt/jirarush/resources/attachments:ro
+    networks: [appnet]
+
+volumes:
+  db_data:
+  attachments:
+
+networks:
+  appnet:
+    driver: bridge
